@@ -28,7 +28,16 @@ CURRENCIES = {"GBP": "£", "USD": "$", "EUR": "€"}
 
 # The secret key signs the login cookie so it can't be faked.
 # On a real server, set the SECRET_KEY environment variable to a long random value.
-SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-insecure-key-change-me")
+# "Production" means running online: on Render (which sets RENDER) or with an https BASE_URL.
+PRODUCTION = bool(os.environ.get("RENDER")) or os.environ.get("BASE_URL", "").startswith("https://")
+SECRET_KEY = os.environ.get("SECRET_KEY", "")
+if not SECRET_KEY:
+    if PRODUCTION:
+        raise RuntimeError("SECRET_KEY must be set when the app runs online.")
+    SECRET_KEY = "dev-only-insecure-key-change-me"
+
+APP_NAME = os.environ.get("APP_NAME", "Invoicer")
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "")
 
 
 @asynccontextmanager
@@ -38,11 +47,28 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Invoice Generator", lifespan=lifespan)
-app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, max_age=60 * 60 * 24 * 30)
+# Login cookie: lasts 30 days, can't be read by JavaScript, and online it's only sent over https.
+app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY, max_age=60 * 60 * 24 * 30,
+                   same_site="lax", https_only=PRODUCTION)
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    """Standard browser protections: no embedding our pages in other sites, etc."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    if PRODUCTION:
+        response.headers["Strict-Transport-Security"] = "max-age=31536000"
+    return response
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals["currencies"] = CURRENCIES
 templates.env.globals["billing"] = billing
+templates.env.globals["app_name"] = APP_NAME
+templates.env.globals["contact_email"] = CONTACT_EMAIL
 templates.env.filters["money"] = lambda v, cur: f"{CURRENCIES.get(cur, '')}{v:,.2f}"
 # Like money, but drops ".00" — used on the chart where space is tight.
 templates.env.filters["money_short"] = lambda v, cur: f"{CURRENCIES.get(cur, '')}{v:,.0f}" if v == int(v) else f"{CURRENCIES.get(cur, '')}{v:,.2f}"
@@ -59,7 +85,8 @@ def render(request: Request, template: str, **context):
 
 def base_url(request: Request) -> str:
     """The app's public address, e.g. https://myinvoiceapp.com (used in links Stripe sends people back to)."""
-    return os.environ.get("BASE_URL") or str(request.base_url).rstrip("/")
+    return (os.environ.get("BASE_URL") or os.environ.get("RENDER_EXTERNAL_URL")
+            or str(request.base_url)).rstrip("/")
 
 
 def go(url: str) -> RedirectResponse:
@@ -69,9 +96,29 @@ def go(url: str) -> RedirectResponse:
 
 # ---------------------------------------------------------------- Accounts
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    return go("/invoices" if request.session.get("user_id") else "/login")
+    """Logged in: go to your invoices. Visitors: see the landing page."""
+    if request.session.get("user_id"):
+        return go("/invoices")
+    return render(request, "landing.html", user=None)
+
+
+@app.get("/privacy", response_class=HTMLResponse)
+def privacy(request: Request):
+    return render(request, "privacy.html", user=None)
+
+
+@app.get("/terms", response_class=HTMLResponse)
+def terms(request: Request):
+    return render(request, "terms.html", user=None)
+
+
+@app.get("/healthz")
+def healthcheck(db: Session = Depends(get_db)):
+    """Render checks this address to know the app is up and can reach its database."""
+    db.execute(select(1))
+    return {"ok": True}
 
 
 @app.get("/signup", response_class=HTMLResponse)

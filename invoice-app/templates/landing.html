@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ app_name }} · Professional invoices in 60 seconds{% endblock %}
+{% block head %}
+  <meta name="description" content="Create professional PDF invoices in seconds, save your clients, and see who owes you money. Free for 3 invoices a month.">
+{% endblock %}
+{% block body %}
+<header class="public-nav">
+  <div class="inner">
+    <a class="brand" href="/">🧾 {{ app_name }}</a>
+    <a href="/login">Log in</a>
+    <a class="btn small" href="/signup">Sign up free</a>
+  </div>
+</header>
+
+<main class="landing">
+  <section class="hero">
+    <div class="hero-text">
+      <h1>Professional invoices in 60 seconds.</h1>
+      <p class="lead">For freelancers, tradespeople and small businesses. Fill in a simple form, download a
+        clean PDF, and always know who still owes you money.</p>
+      <div class="hero-actions">
+        <a class="btn big" href="/signup">Create your free account</a>
+        <span class="muted">No card needed · 3 free invoices every month</span>
+      </div>
+    </div>
+
+    {# A small picture of an invoice, drawn in HTML #}
+    <div class="mock" aria-hidden="true">
+      <div class="mock-head"><strong>INVOICE</strong><span>INV-014<br>Due 21 Oct</span></div>
+      <div class="mock-parties"><div><small>FROM</small>Your Business</div><div><small>BILL TO</small>Jane's Cafe</div></div>
+      <div class="mock-row th"><span>Description</span><span>Amount</span></div>
+      <div class="mock-row"><span>Boiler service</span><span>£85.00</span></div>
+      <div class="mock-row"><span>Radiator valve × 2</span><span>£45.00</span></div>
+      <div class="mock-row"><span>VAT 20%</span><span>£26.00</span></div>
+      <div class="mock-total"><span>Total due</span><strong>£156.00</strong></div>
+      <div class="mock-badge">✓ Paid</div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="feature">
+      <div class="icon">📄</div>
+      <h3>Looks professional</h3>
+      <p>Clean PDF invoices with your details, VAT and payment instructions. Ready to email or print.</p>
+    </div>
+    <div class="feature">
+      <div class="icon">💷</div>
+      <h3>Know who owes you</h3>
+      <p>See money owed, overdue and paid this month at a glance. Overdue invoices are flagged automatically.</p>
+    </div>
+    <div class="feature">
+      <div class="icon">⚡</div>
+      <h3>Faster every time</h3>
+      <p>Your business details and clients are saved, and invoice numbers fill themselves in.</p>
+    </div>
+    <div class="feature">
+      <div class="icon">📱</div>
+      <h3>Works on your phone</h3>
+      <p>Send an invoice from the van, the shop or the sofa. Nothing to install.</p>
+    </div>
+  </section>
+
+  <section class="pricing" id="pricing">
+    <h2>Simple pricing</h2>
+    <div class="plans">
+      <div class="card plan">
+        <h3>Free</h3>
+        <div class="price">£0</div>
+        <ul>
+          <li>{{ billing.FREE_INVOICES_PER_MONTH }} invoices per month</li>
+          <li>Saved clients</li>
+          <li>Paid &amp; overdue tracking</li>
+        </ul>
+        <a class="btn ghost full-width" href="/signup">Start free</a>
+      </div>
+      <div class="card plan current">
+        <h3>Pro</h3>
+        <div class="price">{{ billing.PRO_PRICE_LABEL.split('/')[0] }}<span>/month</span></div>
+        <ul>
+          <li><strong>Unlimited</strong> invoices</li>
+          <li>Everything in Free</li>
+          <li>Cancel any time</li>
+        </ul>
+        <a class="btn full-width" href="/signup">Start free, upgrade any time</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <h2>Stop chasing payments in spreadsheets.</h2>
+    <a class="btn big" href="/signup">Create your free account</a>
+  </section>
+</main>
+{% endblock %}

@@ -11,8 +11,20 @@ from datetime import date, datetime
 from sqlalchemy import ForeignKey, String, Text, create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///invoices.db")
-engine = create_engine(DATABASE_URL)
+def database_url() -> str:
+    url = os.environ.get("DATABASE_URL", "sqlite:///invoices.db")
+    # Hosting services like Render give a "postgres://" or "postgresql://" address;
+    # SQLAlchemy needs to be told to use the psycopg driver for it.
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
+
+
+DATABASE_URL = database_url()
+# pool_pre_ping checks a database connection still works before using it
+# (online databases close idle connections).
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
 
 class Base(DeclarativeBase):

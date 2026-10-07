@@ -3,9 +3,11 @@ import tempfile
 
 import pytest
 
-# Use a throwaway database file for tests, so your real invoices.db is never touched.
+# Use a throwaway database for tests, so your real data is never touched.
+# By default that's a temporary SQLite file; set TEST_DATABASE_URL to run the
+# tests against an empty Postgres database instead.
 _tmp = tempfile.mkdtemp()
-os.environ["DATABASE_URL"] = f"sqlite:///{_tmp}/test.db"
+os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL", f"sqlite:///{_tmp}/test.db")
 
 from fastapi.testclient import TestClient  # noqa: E402
 

@@ -21,6 +21,7 @@ Free plan (3 invoices/month) and Pro plan (£6/month, unlimited) paid through St
 | `billing.py` | Free/Pro plans, the monthly limit, and talking to Stripe |
 | `setup_stripe.py` | One-off script that creates the Pro plan in your Stripe account |
 | `.env.example` | Template for your secret settings (copy it to `.env`) |
+| `../render.yaml` | Tells Render how to run the app and its database online |
 | `templates/` | The HTML pages (`base.html` is the shared layout and menu) |
 | `static/style.css` | How everything looks |
 | `tests/` | Automated checks that the app works |
@@ -52,7 +53,7 @@ app, your existing `invoices.db` is upgraded automatically when the app starts.
 ```
 pytest
 ```
-You should see `19 passed`. Run this after every change to check nothing broke.
+You should see `25 passed`. Run this after every change to check nothing broke.
 
 ## Set up payments (Stripe)
 The app works without this; the Upgrade button stays greyed out until it's done.
@@ -84,9 +85,39 @@ Stripe tells the app about changes by calling `/stripe/webhook`. On your own com
 
 Once the app is online (step 5) you'll add the webhook in the Stripe dashboard instead.
 
+## Put it online (Render)
+The repository includes `render.yaml`, which sets up the app **and** a Postgres database in one go.
+
+1. Sign up at https://render.com using **Sign in with GitHub**.
+2. Click **New → Blueprint**, connect the `income-streams` repository, and click **Apply**.
+3. Render asks for the secret settings (leave the Stripe ones blank for now if you haven't set up Stripe):
+   - `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`: same values as your `.env`
+   - `STRIPE_WEBHOOK_SECRET`: from step 5 below
+   - `CONTACT_EMAIL`: the email customers can reach you on (shown on the Privacy and Terms pages)
+4. Wait for the build to finish (a few minutes). Your app is live at the `https://....onrender.com`
+   address Render shows. `SECRET_KEY` and the database are filled in automatically.
+5. **Stripe webhook:** Stripe dashboard → **Developers → Webhooks → Add endpoint**:
+   - URL: `https://YOUR-APP.onrender.com/stripe/webhook`
+   - Events: `checkout.session.completed`, `customer.subscription.created`,
+     `customer.subscription.updated`, `customer.subscription.deleted`
+   - Copy the signing secret (`whsec_...`) into Render → your service → **Environment** →
+     `STRIPE_WEBHOOK_SECRET`, then save (the app restarts).
+
+Every time new code is pushed to GitHub, Render redeploys automatically.
+
+**Free vs paid hosting:** the blueprint starts on Render's free plans. Free apps go to sleep when
+nobody uses them (the first visit then takes ~1 minute) and free databases expire after a limited time,
+so before real customers rely on it, switch the web service to **Starter** and the database to a paid
+plan in the Render dashboard.
+
+### Running the tests against Postgres (optional)
+```
+TEST_DATABASE_URL=postgresql://user:password@localhost:5432/empty_test_db pytest
+```
+
 ## Roadmap
 - [x] Step 1: Form → PDF invoice
 - [x] Step 2: User accounts, saved clients and invoices
 - [x] Step 3: Dashboard (paid / unpaid / overdue)
 - [x] Step 4: Stripe subscriptions (free + paid plan)
-- [ ] Step 5: Deploy online + landing page
+- [x] Step 5: Ready to deploy online (Render) + landing page, privacy and terms pages

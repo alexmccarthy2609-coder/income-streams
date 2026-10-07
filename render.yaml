@@ -1,0 +1,34 @@
+# Render "Blueprint": tells Render how to run the invoice app and its database.
+# In Render: New → Blueprint → pick this GitHub repository.
+services:
+  - type: web
+    name: invoicer
+    runtime: python
+    rootDir: invoice-app
+    plan: free            # change to "starter" before real customers (free apps sleep when idle)
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13"
+      - key: SECRET_KEY
+        generateValue: true   # Render makes a long random value for you
+      - key: DATABASE_URL
+        fromDatabase:
+          name: invoicer-db
+          property: connectionString
+      # sync: false = Render asks you to type these in (they're secret, so not stored in GitHub)
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PRICE_ID
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: CONTACT_EMAIL
+        sync: false
+
+databases:
+  - name: invoicer-db
+    plan: free              # check Render's limits: free databases expire; upgrade before real customers
+    databaseName: invoicer

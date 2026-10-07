@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Invoice Generator{% endblock %}</title>
   <link rel="stylesheet" href="/static/style.css">
+  {% block head %}{% endblock %}
 </head>
 <body>
 {% if user %}
 <nav>
   <div class="inner">
-    <a class="brand" href="/invoices">🧾 Invoicer</a>
+    <a class="brand" href="/invoices">🧾 {{ app_name }}</a>
     {% set path = request.url.path %}
     <a href="/invoices" class="{{ 'active' if path.startswith('/invoices') }}">Invoices</a>
     <a href="/clients" class="{{ 'active' if path.startswith('/clients') }}">Clients</a>
@@ -25,5 +26,9 @@
 </nav>
 {% endif %}
 {% block body %}{% endblock %}
+<footer class="site-footer">
+  © {{ app_name }} · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a>
+  {% if contact_email %} · <a href="mailto:{{ contact_email }}">Contact</a>{% endif %}
+</footer>
 </body>
 </html>

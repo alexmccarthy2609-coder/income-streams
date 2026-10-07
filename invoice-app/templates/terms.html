@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Terms · {{ app_name }}{% endblock %}
+{% block body %}
+<main class="legal">
+  <p><a href="/">← {{ app_name }}</a></p>
+  <h1>Terms of service</h1>
+  <p class="muted">Last updated: 7 October 2026</p>
+
+  <h2>The service</h2>
+  <p>{{ app_name }} lets you create, save and download invoices. You're responsible for the content of your
+    invoices, including amounts and tax, and for keeping your login details safe.</p>
+
+  <h2>Plans and payment</h2>
+  <ul>
+    <li>The Free plan includes {{ billing.FREE_INVOICES_PER_MONTH }} new invoices per calendar month.</li>
+    <li>The Pro plan costs {{ billing.PRO_PRICE_LABEL }}, billed monthly in advance through Stripe, until you cancel.</li>
+    <li>You can cancel any time from the Billing page. You keep Pro until the end of the month you've paid for,
+      then move back to Free. Your invoices are kept.</li>
+  </ul>
+
+  <h2>Fair use</h2>
+  <p>Don't use the service for anything illegal, or to send fake or misleading invoices.
+    We may close accounts that do.</p>
+
+  <h2>Availability</h2>
+  <p>We work to keep the service running and your data safe, but can't promise it will never be unavailable.
+    Keep your own copies of important invoices (you can download the PDF any time).</p>
+
+  <h2>Contact</h2>
+  <p>{% if contact_email %}Questions? Email <a href="mailto:{{ contact_email }}">{{ contact_email }}</a>.
+    {% else %}Questions? Contact us using the details on our website.{% endif %}</p>
+</main>
+{% endblock %}
