@@ -19,7 +19,8 @@ Gumroad's menus change occasionally. If a button is named slightly differently, 
 2. Fill in:
    - **Name:** `OfficeKit: Automate Spreadsheets, PDFs & File Admin with Python`
    - **Type:** Digital product
-   - **Price:** `12` (launch price; raise it to 19 after your first ~50 sales or a month)
+   - **Currency:** GBP (£). If it isn't offered here, set it in the product's settings or under Settings → Payments
+   - **Price:** `9` (launch price; raise it to 15 after your first ~50 sales or a month)
 3. Tap **Next: Customize** (or similar).
 
 ## 3. Fill in the product page
@@ -58,7 +59,8 @@ Gumroad's menus change occasionally. If a button is named slightly differently, 
 
 ## 5. Set up payouts (so the money reaches you)
 1. **Settings → Payments**: add your bank details and complete the tax form Gumroad asks for.
-2. Gumroad takes a fee per sale (roughly 10% plus card processing). There are no monthly costs.
+2. Gumroad pays out to UK bank accounts weekly, and collects and pays UK/EU VAT for you, so you don't need to register for VAT.
+3. Gumroad takes a fee per sale (10% + $0.50, taken automatically). There are no monthly costs.
 
 ## 6. Test, then publish
 1. Tap **Publish**.

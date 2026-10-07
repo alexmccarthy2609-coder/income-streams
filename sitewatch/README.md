@@ -4,7 +4,7 @@ Users sign up with just an email and add websites. SiteWatch checks every site e
 goes down, when it recovers, and 14 days before its SSL certificate expires.
 
 - **Free:** 3 sites · **Pro:** 50 sites, as a monthly Stripe subscription
-- Python + FastAPI + SQLite, all in one process, cheap to host ($5/month handles thousands of sites)
+- Python + FastAPI + SQLite, all in one process, cheap to host (£5/month handles thousands of sites)
 - Login uses a private dashboard link sent by email (no passwords to manage)
 - Blocks private and internal addresses so users can't make your server probe your own network
 
@@ -19,12 +19,12 @@ pytest -q
 
 ## Go live (about an hour)
 
-1. **Host:** deploy the Dockerfile to Railway, Fly.io or Render (attach a volume at `/data`), or to any $5 VPS.
+1. **Host:** deploy the Dockerfile to Railway, Fly.io or Render (attach a volume at `/data`), or to any £5/month VPS.
    Run **one** instance, since the checker runs inside the web process.
 2. **Domain:** point `sitewatch.yourdomain.com` at it and set `BASE_URL`.
 3. **Email:** create a free [Resend](https://resend.com) or Brevo account, verify your domain, and fill in the `SMTP_*` settings.
 4. **Stripe:**
-   - Create a product "SiteWatch Pro" with a recurring $9/month price, then a **Payment Link** for it → `STRIPE_PAYMENT_LINK`.
+   - Create a product "SiteWatch Pro" with a recurring £7/month price (currency: GBP), then a **Payment Link** for it → `STRIPE_PAYMENT_LINK`.
    - Developers → Webhooks → add `https://sitewatch.yourdomain.com/stripe/webhook` with the events
      `checkout.session.completed` and `customer.subscription.deleted` → `STRIPE_WEBHOOK_SECRET`.
    - Settings → Billing → Customer portal → enable it and copy the link → `STRIPE_PORTAL_LINK`.

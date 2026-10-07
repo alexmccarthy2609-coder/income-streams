@@ -2,7 +2,7 @@
 
 **Title:** OfficeKit: Automate Spreadsheets, PDFs & File Admin with Python
 
-**Price:** $19 (launch at $12 for the first 50 buyers, then raise it)
+**Price:** £15 (launch at £9 for the first 50 buyers, then raise it). Set the product currency to GBP.
 
 **Short description:**
 Stop copy-pasting between spreadsheets. OfficeKit merges Excel files, splits and merges PDFs,

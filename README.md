@@ -4,8 +4,8 @@ Products, each in its own folder:
 
 | | Stream | Model | Folder |
 |---|---|---|---|
-| 1 | **OfficeKit**: office automation toolkit (Excel, PDF, rename, CSV, scraping) | One-off sale, $12–19 on Gumroad / Lemon Squeezy. Also serves as your **freelance portfolio** | [`toolkit/`](toolkit/) |
-| 2 | **SiteWatch**: website uptime & SSL monitoring | SaaS: free tier + $9/month Pro via Stripe | [`sitewatch/`](sitewatch/) |
+| 1 | **OfficeKit**: office automation toolkit (Excel, PDF, rename, CSV, scraping) | One-off sale, £9–15 on Gumroad / Lemon Squeezy. Also serves as your **freelance portfolio** | [`toolkit/`](toolkit/) |
+| 2 | **SiteWatch**: website uptime & SSL monitoring | SaaS: free tier + £7/month Pro via Stripe | [`sitewatch/`](sitewatch/) |
 | 3 | **Invoice app**: invoice generator for freelancers and small businesses (ready to deploy on Render, see [`invoice-app/README.md`](invoice-app/README.md)) | SaaS: Free + Pro (£6/month) | [`invoice-app/`](invoice-app/) |
 
 **Why OfficeKit + SiteWatch:** OfficeKit can earn within days and needs no hosting. SiteWatch takes longer to build an
@@ -38,7 +38,13 @@ the bills while SiteWatch grows.
 - Free OfficeKit Lite for GitHub: `cd toolkit && python build_product.py --lite`
 
 ## Running costs
-Domain ~$12/year · hosting $0–5/month · Resend free tier · Stripe/Gumroad take a % per sale only.
+Domain ~£10/year · hosting £0–5/month · Resend free tier · Stripe/Gumroad take a % per sale only.
+
+## UK tax & VAT
+- **VAT:** Gumroad (and Lemon Squeezy/Paddle) are the legal seller, so they collect and pay UK/EU VAT for you.
+  With Stripe you handle VAT yourself. For SiteWatch, consider switching to Lemon Squeezy or Paddle before launch.
+- **Income tax:** the first £1,000/year of trading income is tax-free (HMRC trading allowance). Above that,
+  register as self-employed with HMRC and file a Self Assessment return. Keep a record of sales and costs from day one.
 
 ## Realistic expectations
 Most products earn nothing for the first few weeks; marketing matters as much as the code.

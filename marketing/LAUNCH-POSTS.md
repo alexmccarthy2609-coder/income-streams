@@ -92,7 +92,7 @@ Typical projects:
 You get clean, documented Python code with tests, and a short guide so anyone on your team can run it.
 See my toolkit for examples of my work: <GITHUB LINK>
 
-**Pricing to start:** bid $25–35/hour or fixed $50–150 for small scripts. Raise your rate after your first 5 five-star reviews.
+**Pricing to start** (Upwork and Fiverr price in US dollars even for UK sellers): bid $25–35/hour (about £20–28) or fixed $50–150 for small scripts. Raise your rate after your first 5 five-star reviews.
 
 ---
 
@@ -107,5 +107,7 @@ See my toolkit for examples of my work: <GITHUB LINK>
 | Delivery | 2 days | 4 days | 7 days |
 | Revisions | 1 | 2 | 3 |
 | Includes | Script + instructions | + Excel/CSV formatting | + automated runs + email reports |
+
+Fiverr shows buyers prices in their own currency and pays you out in GBP.
 
 **Gig image:** `marketing/images/officekit-cover.png`

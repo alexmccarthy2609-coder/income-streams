@@ -6,7 +6,7 @@ CHECK_INTERVAL_SECONDS = int(os.getenv("CHECK_INTERVAL_SECONDS", "300"))
 SSL_WARN_DAYS = int(os.getenv("SSL_WARN_DAYS", "14"))
 
 PLAN_LIMITS = {"free": 3, "pro": 50}
-PRO_PRICE = os.getenv("PRO_PRICE", "$9/month")
+PRO_PRICE = os.getenv("PRO_PRICE", "£7/month")
 
 # Stripe: create a Payment Link for a recurring product in the Stripe dashboard,
 # and a webhook endpoint pointing at {BASE_URL}/stripe/webhook.
