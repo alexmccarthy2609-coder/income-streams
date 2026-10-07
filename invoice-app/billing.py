@@ -64,7 +64,9 @@ def apply_subscription(user: User, status: str, customer_id: str | None, subscri
 # ---------------------------------------------------------------- Stripe calls
 
 def stripe_ready() -> bool:
-    return bool(os.environ.get("STRIPE_SECRET_KEY") and os.environ.get("STRIPE_PRICE_ID"))
+    # Placeholder values like "none" count as "not set up yet".
+    return (os.environ.get("STRIPE_SECRET_KEY", "").startswith(("sk_test_", "sk_live_"))
+            and os.environ.get("STRIPE_PRICE_ID", "").startswith("price_"))
 
 
 def _use_key() -> None:

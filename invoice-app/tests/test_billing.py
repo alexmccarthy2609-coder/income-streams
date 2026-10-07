@@ -160,3 +160,12 @@ def test_webhook_rejects_fake_messages(make_client, stripe_on):
     assert send_webhook(c, event, secret="whsec_wrong").status_code == 400
     assert c.post("/stripe/webhook", content=json.dumps(event)).status_code == 400
     assert get_user().plan == "free"
+
+
+def test_placeholder_stripe_values_mean_not_set_up(monkeypatch):
+    monkeypatch.setenv("STRIPE_SECRET_KEY", "none")
+    monkeypatch.setenv("STRIPE_PRICE_ID", "none")
+    assert not billing.stripe_ready()
+    monkeypatch.setenv("STRIPE_SECRET_KEY", "sk_test_abc")
+    monkeypatch.setenv("STRIPE_PRICE_ID", "price_abc")
+    assert billing.stripe_ready()
