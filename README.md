@@ -1,58 +1,28 @@
 # Income Streams
 
-Products, each in its own folder:
+Each product lives in its own repository, so separate Claude sessions can work on them without clashing.
 
-| | Stream | Model | Folder |
+| | Product | Model | Where |
 |---|---|---|---|
-| 1 | **OfficeKit**: office automation toolkit (Excel, PDF, rename, CSV, scraping) | One-off sale, £9–15 on Gumroad / Lemon Squeezy. Also serves as your **freelance portfolio** | [`toolkit/`](toolkit/) |
-| 2 | **SiteWatch**: website uptime & SSL monitoring | SaaS: free tier + £7/month Pro via Stripe | [`sitewatch/`](sitewatch/) |
-| 3 | **Invoice app**: invoice generator for freelancers and small businesses (ready to deploy on Render, see [`invoice-app/README.md`](invoice-app/README.md)) | SaaS: Free + Pro (£6/month) | [`invoice-app/`](invoice-app/) |
+| 1 | **OfficeKit**: office automation toolkit (Excel, PDF, rename, CSV, scraping) | One-off sale, £9–15 on Gumroad. Also serves as your **freelance portfolio** | [officekit](https://github.com/alexmccarthy2609-coder/officekit) repo |
+| 2 | **SiteWatch**: website uptime & SSL monitoring | SaaS: free tier + £7/month Pro | [sitewatch](https://github.com/alexmccarthy2609-coder/sitewatch) repo |
+| 3 | **Invoice app**: invoice generator for freelancers and small businesses (ready to deploy on Render, see [`invoice-app/README.md`](invoice-app/README.md)) | SaaS: Free + Pro (£6/month) | [`invoice-app/`](invoice-app/) in this repo |
 
-**Why OfficeKit + SiteWatch:** OfficeKit can earn within days and needs no hosting. SiteWatch takes longer to build an
-audience, but subscriptions add up month after month. The freelance work OfficeKit attracts also pays
-the bills while SiteWatch grows.
-
-## 30-day launch plan
-
-**Week 1: OfficeKit live**
-- [ ] `cd toolkit && python build_product.py`, then upload `dist/officekit-1.0.0.zip` to Gumroad or Lemon Squeezy
-- [ ] Paste the listing copy from `toolkit/SALES-PAGE.md`
-- [ ] Record a 30-second screen capture of `excel-merge` merging 20 files; post it to r/excel and r/automate
-
-**Week 2: freelance**
-- [ ] Create Upwork + Fiverr profiles: "I automate Excel, PDF & data tasks with Python"
-- [ ] Use the OfficeKit demo as your portfolio; bid on 3–5 small automation jobs a day
-- [ ] Every client job is a candidate for a new OfficeKit tool (v1.1, v1.2…)
-
-**Week 3: SiteWatch live**
-- [ ] Follow `sitewatch/README.md` → "Go live" (host + domain + Resend + Stripe test mode)
-- [ ] Monitor your own sites with it for a few days, then switch Stripe to live mode
-
-**Week 4: SiteWatch customers**
-- [ ] Post in r/webdev, r/freelance and r/Wordpress; DM 20 small web agencies offering free Pro for feedback
-- [ ] Track: signups, active sites, free→Pro conversion
-
-## Marketing assets (`marketing/`)
-- `images/`: Gumroad cover + SiteWatch screenshots (regenerate with `python marketing/make_images.py`)
-- `LAUNCH-POSTS.md`: Reddit posts, agency outreach message, Upwork profile, Fiverr gig
-- Free OfficeKit Lite for GitHub: `cd toolkit && python build_product.py --lite`
+## Order of play
+1. **OfficeKit on sale:** follow `GUMROAD-SETUP.md` in the officekit repo. It can earn within days and needs no hosting.
+2. **Freelance:** Upwork/Fiverr profiles from `marketing/LAUNCH-POSTS.md` in the officekit repo.
+3. **One subscription product online:** SiteWatch or the invoice app. Both need hosting, payments and email,
+   so launch one, promote it properly, then decide on the other.
 
 ## Running costs
-Domain ~£10/year · hosting £0–5/month · Resend free tier · Stripe/Gumroad take a % per sale only.
+Domain ~£10/year · hosting £0–5/month per app · email free tier · payment platforms take a % per sale only.
 
 ## UK tax & VAT
-- **VAT:** Gumroad (and Lemon Squeezy/Paddle) are the legal seller, so they collect and pay UK/EU VAT for you.
-  With Stripe you handle VAT yourself. For SiteWatch, consider switching to Lemon Squeezy or Paddle before launch.
+- **VAT:** Gumroad, Lemon Squeezy and Paddle are the legal seller, so they collect and pay UK/EU VAT for you.
+  With Stripe you handle VAT yourself.
 - **Income tax:** the first £1,000/year of trading income is tax-free (HMRC trading allowance). Above that,
   register as self-employed with HMRC and file a Self Assessment return. Keep a record of sales and costs from day one.
 
 ## Realistic expectations
 Most products earn nothing for the first few weeks; marketing matters as much as the code.
-Judge each stream after ~60 days of real promotion. Keep the ones that get traction and drop the ones that don't.
-
-## Development
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -e toolkit pytest && (cd toolkit && pytest -q)
-pip install -r sitewatch/requirements.txt && (cd sitewatch && pytest -q)
-```
+Judge each product after ~60 days of real promotion. Keep the ones that get traction and drop the ones that don't.
