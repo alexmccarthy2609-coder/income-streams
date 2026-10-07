@@ -16,7 +16,7 @@ the bills while SiteWatch grows.
 
 **Week 1: OfficeKit live**
 - [ ] `cd toolkit && python build_product.py`, then upload `dist/officekit-1.0.0.zip` to Gumroad or Lemon Squeezy
-- [ ] Paste the listing copy from `toolkit/SALES-PAGE.md`; replace `YOUR-DOMAIN` in the README with your support email
+- [ ] Paste the listing copy from `toolkit/SALES-PAGE.md`
 - [ ] Record a 30-second screen capture of `excel-merge` merging 20 files; post it to r/excel and r/automate
 
 **Week 2: freelance**

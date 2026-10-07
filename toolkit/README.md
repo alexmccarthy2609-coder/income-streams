@@ -50,4 +50,4 @@ excel_merge.merge([Path("a.xlsx"), Path("b.csv")], Path("out.xlsx"))
 
 ## Support
 
-Email support@YOUR-DOMAIN with the command you ran and the error message.
+Reply to your purchase receipt email with the command you ran and the error message, and you will get help within 2 working days.
