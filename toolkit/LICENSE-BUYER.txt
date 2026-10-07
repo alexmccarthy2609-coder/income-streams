@@ -1,0 +1,14 @@
+OfficeKit Single-User License
+
+You may:
+  - Install and use OfficeKit on any computers you personally use.
+  - Use it for personal or commercial work, including work for clients.
+  - Modify the code for your own use.
+
+You may not:
+  - Resell, redistribute, or publish OfficeKit or modified versions of it,
+    in whole or in part, as a product or free download.
+
+Team licenses are available on request.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.

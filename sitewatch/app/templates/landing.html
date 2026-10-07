@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Know your site is down before your customers do.</h1>
+<p class="muted">SiteWatch checks your websites every 5 minutes and emails you the moment one goes down,
+when it comes back, and before your SSL certificate expires.</p>
+
+<div class="card">
+  {% if sent %}
+    <p><strong>Check your inbox.</strong> We've emailed you a link to your dashboard.</p>
+  {% else %}
+    <form class="inline" method="post" action="/signup">
+      <input type="email" name="email" placeholder="you@company.com" required aria-label="Email">
+      <button>Start monitoring free</button>
+    </form>
+    <p class="muted">No password or card needed.</p>
+  {% endif %}
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Free</h3>
+    <div class="price">$0</div>
+    <ul><li>{{ limits.free }} websites</li><li>5-minute checks</li><li>Down/up email alerts</li><li>SSL expiry warnings</li></ul>
+  </div>
+  <div class="card">
+    <h3>Pro</h3>
+    <div class="price">{{ price }}</div>
+    <ul><li>{{ limits.pro }} websites</li><li>Everything in Free</li><li>Ideal for agencies & freelancers managing client sites</li></ul>
+  </div>
+</div>
+{% endblock %}
