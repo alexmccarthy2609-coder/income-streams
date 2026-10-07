@@ -21,14 +21,17 @@
     <tbody>
     {% for s in sites %}
       <tr>
-        <td>{{ s.url }}<br><span class="muted">{{ s.last_checked or "Not checked yet" }}</span></td>
+        <td>{{ s.url }}<br><span class="muted">{{ s.last_checked|time_ago }}</span></td>
         <td>
           {% if s.is_up is none %}<span class="muted">Pending</span>
           {% elif s.is_up %}<span class="up">Up</span>
           {% else %}<span class="down">Down</span><br><span class="muted">{{ s.error }}</span>{% endif %}
         </td>
         <td>{{ s.response_ms ~ " ms" if s.response_ms is not none else "–" }}</td>
-        <td>{{ (s.ssl_expires or "–")[:10] }}</td>
+        <td>{% set d = s.ssl_expires|days_until %}
+          {% if d is none %}–
+          {% elif d <= ssl_warn %}<span class="warn">⚠ {{ d }} days</span><br><span class="muted">{{ s.ssl_expires[:10] }}</span>
+          {% else %}{{ d }} days<br><span class="muted">{{ s.ssl_expires[:10] }}</span>{% endif %}</td>
         <td>
           <form method="post" action="/d/{{ user.token }}/sites/{{ s.id }}/delete">
             <button class="link">Remove</button>

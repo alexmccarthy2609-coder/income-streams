@@ -31,6 +31,11 @@ the bills while SiteWatch grows.
 - [ ] Post in r/webdev, r/freelance and r/Wordpress; DM 20 small web agencies offering free Pro for feedback
 - [ ] Track: signups, active sites, free→Pro conversion
 
+## Marketing assets (`marketing/`)
+- `images/`: Gumroad cover + SiteWatch screenshots (regenerate with `python marketing/make_images.py`)
+- `LAUNCH-POSTS.md`: Reddit posts, agency outreach message, Upwork profile, Fiverr gig
+- Free OfficeKit Lite for GitHub: `cd toolkit && python build_product.py --lite`
+
 ## Running costs
 Domain ~$12/year · hosting $0–5/month · Resend free tier · Stripe/Gumroad take a % per sale only.
 

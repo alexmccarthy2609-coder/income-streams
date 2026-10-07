@@ -1,0 +1,41 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>OfficeKit cover</title>
+<style>
+  * { box-sizing:border-box; margin:0; }
+  body { width:1280px; height:720px; overflow:hidden; font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+         background:#0f1a2e; color:#fff; display:grid; grid-template-columns:1fr 1fr; align-items:center; padding:0 72px; gap:48px; }
+  h1 { font-size:76px; letter-spacing:-2px; line-height:1; }
+  h1 span { color:#7ea6ff; }
+  p.tag { font-size:28px; color:#b9c6e0; margin-top:20px; line-height:1.35; }
+  ul { list-style:none; padding:0; margin-top:32px; display:flex; flex-wrap:wrap; gap:10px; }
+  li { background:#1d2b47; border:1px solid #2e4170; border-radius:999px; padding:8px 16px; font-size:19px; color:#dbe5ff; }
+  .term { background:#0a1120; border:1px solid #2a3a5e; border-radius:14px; box-shadow:0 30px 60px rgba(0,0,0,.45);
+          font:19px/1.65 ui-monospace,"SF Mono",Menlo,Consolas,monospace; overflow:hidden; }
+  .bar { background:#16213a; padding:12px 16px; display:flex; gap:8px; }
+  .bar i { width:13px; height:13px; border-radius:50%; background:#ff5f57; }
+  .bar i:nth-child(2) { background:#febc2e; } .bar i:nth-child(3) { background:#28c840; }
+  pre { padding:22px 24px; white-space:pre; color:#cfd8ea; }
+  .c { color:#7ea6ff; } .ok { color:#4cd690; } .dim { color:#6b7a99; }
+</style></head>
+<body>
+  <div>
+    <h1>Office<span>Kit</span></h1>
+    <p class="tag">Hours of spreadsheet, PDF &amp; file admin, done in seconds with Python.</p>
+    <ul><li>Merge Excel</li><li>Split PDFs</li><li>Bulk rename</li><li>Clean CSVs</li><li>Scrape tables</li></ul>
+  </div>
+  <div class="term">
+    <div class="bar"><i></i><i></i><i></i></div>
+<pre><span class="dim">$</span> <span class="c">officekit excel-merge</span> sales_*.xlsx
+<span class="ok">Wrote 14,382 rows to merged.xlsx</span>
+
+<span class="dim">$</span> <span class="c">officekit pdf-split</span> contract.pdf -r 1-3,9
+<span class="ok">Wrote 2 files to split/</span>
+
+<span class="dim">$</span> <span class="c">officekit clean-csv</span> leads.csv
+<span class="ok">2,104 rows in -> 1,877 rows out
+(219 duplicates, 8 empty removed)</span>
+
+<span class="dim">$</span> <span class="c">officekit rename</span> scans/*.jpg --apply
+<span class="ok">Renamed 312 files.</span></pre>
+  </div>
+</body></html>

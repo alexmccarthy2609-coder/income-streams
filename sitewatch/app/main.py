@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import re
+from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from pathlib import Path
 from urllib.parse import urlencode
@@ -15,6 +16,25 @@ from .urls import InvalidURL, assert_public, normalise
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def time_ago(iso: str | None) -> str:
+    if not iso:
+        return "Not checked yet"
+    mins = int((datetime.now(timezone.utc) - datetime.fromisoformat(iso)).total_seconds() // 60)
+    if mins < 1:
+        return "Checked just now"
+    if mins < 60:
+        return f"Checked {mins} min ago"
+    return f"Checked {mins // 60} h ago"
+
+
+def days_until(iso: str | None) -> int | None:
+    return (datetime.fromisoformat(iso) - datetime.now(timezone.utc)).days if iso else None
+
+
+templates.env.filters["time_ago"] = time_ago
+templates.env.filters["days_until"] = days_until
 
 
 @asynccontextmanager
@@ -66,7 +86,7 @@ def dashboard(request: Request, token: str, error: str | None = None, upgraded: 
         "user": user, "sites": sites, "limit": config.PLAN_LIMITS[user["plan"]],
         "error": error, "upgraded": upgraded, "price": config.PRO_PRICE,
         "can_upgrade": bool(config.STRIPE_PAYMENT_LINK),
-        "portal": config.STRIPE_PORTAL_LINK})
+        "portal": config.STRIPE_PORTAL_LINK, "ssl_warn": config.SSL_WARN_DAYS})
 
 
 @app.post("/d/{token}/sites")
