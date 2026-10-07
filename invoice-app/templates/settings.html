@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Settings · Invoice Generator{% endblock %}
+{% block body %}
+<main>
+  <h1>{{ "Welcome! Set up your business" if welcome else "Settings" }}</h1>
+  <p class="sub">These details are filled in automatically on every new invoice.</p>
+  {% if saved %}<div class="alert ok">Settings saved.</div>{% endif %}
+
+  <form method="post" action="/settings">
+    <div class="card">
+      <h2>Your business</h2>
+      <div class="grid">
+        <div><label for="business_name">Business name</label>
+          <input id="business_name" name="business_name" value="{{ user.business_name }}"></div>
+        <div><label for="business_details">Address, email, phone</label>
+          <textarea id="business_details" name="business_details">{{ user.business_details }}</textarea></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Invoice defaults</h2>
+      <div class="grid">
+        <div><label for="default_currency">Currency</label>
+          <select id="default_currency" name="default_currency">
+            {% for code, symbol in currencies.items() %}
+              <option value="{{ code }}" {{ "selected" if code == user.default_currency }}>{{ code }} ({{ symbol }})</option>
+            {% endfor %}
+          </select></div>
+        <div><label for="default_tax_rate">Tax / VAT %</label>
+          <input id="default_tax_rate" name="default_tax_rate" type="number" min="0" step="0.01" value="{{ '%g' % user.default_tax_rate }}"></div>
+        <div><label for="payment_terms_days">Payment due after (days)</label>
+          <input id="payment_terms_days" name="payment_terms_days" type="number" min="0" value="{{ user.payment_terms_days }}"></div>
+      </div>
+      <div style="margin-top:12px"><label for="default_notes">Payment details / notes</label>
+        <textarea id="default_notes" name="default_notes" placeholder="e.g. Bank: 12-34-56  Account: 12345678. Thank you for your business!">{{ user.default_notes }}</textarea></div>
+    </div>
+
+    <button class="btn full">{{ "Save and create my first invoice" if welcome else "Save settings" }}</button>
+    {% if welcome %}<input type="hidden" name="next" value="/invoices/new">{% endif %}
+  </form>
+</main>
+{% endblock %}

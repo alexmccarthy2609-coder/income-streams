@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Invoices · Invoice Generator{% endblock %}
+
+{% macro amounts(totals) -%}
+  {%- if totals -%}
+    {%- for cur, value in totals.items() -%}
+      <div>{{ value | money(cur) }}</div>
+    {%- endfor -%}
+  {%- else -%}
+    <div>{{ 0 | money(user.default_currency) }}</div>
+  {%- endif -%}
+{%- endmacro %}
+
+{% block body %}
+<main>
+  <div class="page-head">
+    <h1>Invoices</h1>
+    <a class="btn" href="/invoices/new">+ New invoice</a>
+  </div>
+
+  {% set created = request.query_params.get("created") %}
+  {% if created %}
+    <div class="alert ok">Invoice saved. <a href="/invoices/{{ created }}/pdf" target="_blank">Open the PDF →</a></div>
+  {% endif %}
+
+  {% if not billing.is_pro(user) %}
+    {% set used = billing.invoices_used(user) %}
+    <div class="alert {{ 'error' if used >= billing.FREE_INVOICES_PER_MONTH else 'info' }}">
+      Free plan: {{ used }} of {{ billing.FREE_INVOICES_PER_MONTH }} invoices used this month.
+      <a href="/billing">Upgrade to Pro for unlimited invoices →</a>
+    </div>
+  {% endif %}
+
+  {# ---- Summary tiles ---- #}
+  <div class="tiles">
+    <div class="tile">
+      <div class="tile-label">Owed to you</div>
+      <div class="tile-value hero">{{ amounts(stats.outstanding) }}</div>
+      <div class="tile-note">{{ stats.outstanding_count }} unpaid invoice{{ "s" if stats.outstanding_count != 1 }}</div>
+    </div>
+    <div class="tile">
+      <div class="tile-label">Overdue</div>
+      <div class="tile-value">{{ amounts(stats.overdue) }}</div>
+      <div class="tile-note">
+        {% if stats.overdue_count %}
+          <a class="status-text overdue" href="/invoices?status=overdue">⚠ {{ stats.overdue_count }} past due date</a>
+        {% else %}
+          <span class="status-text paid">✓ Nothing overdue</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="tile">
+      <div class="tile-label">Paid this month</div>
+      <div class="tile-value">{{ amounts(stats.paid_this_month) }}</div>
+      <div class="tile-note">{{ chart[-1].full_label }}</div>
+    </div>
+  </div>
+
+  {# ---- Money received chart ---- #}
+  <div class="card">
+    <h2>Money received · last 6 months ({{ user.default_currency }})</h2>
+    {% if has_paid %}
+      <div class="bars" role="img" aria-label="Bar chart of money received per month">
+        {% for m in chart %}
+          <div class="bar-col" tabindex="0">
+            <div class="bar-area">
+              {% if m.is_top or loop.last %}
+                <span class="bar-label" style="bottom: calc({{ m.percent }}% + 4px)">{{ m.amount | money_short(user.default_currency) }}</span>
+              {% endif %}
+              <div class="bar" style="height: {{ m.percent }}%"></div>
+            </div>
+            <div class="bar-month">{{ m.label }}</div>
+            <div class="tip"><strong>{{ m.full_label }}</strong><br>{{ m.amount | money(user.default_currency) }} received</div>
+          </div>
+        {% endfor %}
+      </div>
+      <table class="sr-only">
+        <caption>Money received per month</caption>
+        {% for m in chart %}<tr><th>{{ m.full_label }}</th><td>{{ m.amount | money(user.default_currency) }}</td></tr>{% endfor %}
+      </table>
+    {% else %}
+      <p class="empty">When clients pay, click <strong>Mark paid</strong> on the invoice and your income will show here.</p>
+    {% endif %}
+  </div>
+
+  {# ---- Filter tabs ---- #}
+  <div class="tabs">
+    {% for name in ["all", "unpaid", "overdue", "paid"] %}
+      <a href="/invoices?status={{ name }}" class="{{ 'active' if status == name }}">
+        {{ name | capitalize }} <span class="count">{{ counts[name] }}</span>
+      </a>
+    {% endfor %}
+  </div>
+
+  {# ---- Invoice table ---- #}
+  {% set back = "/invoices?status=" ~ status %}
+  <div class="card table-wrap">
+    {% if invoices %}
+    <table>
+      <thead><tr>
+        <th>Number</th><th>Client</th><th>Date</th><th>Due</th>
+        <th class="num">Total</th><th>Status</th><th></th>
+      </tr></thead>
+      <tbody>
+      {% for inv in invoices %}
+        {% set st = inv.display_status %}
+        <tr>
+          <td><a href="/invoices/{{ inv.id }}/pdf" target="_blank">{{ inv.number }}</a></td>
+          <td>{{ inv.client_name }}</td>
+          <td>{{ inv.invoice_date.strftime("%d %b %Y") }}</td>
+          <td>
+            {{ inv.due_date.strftime("%d %b %Y") }}
+            {% if st == "overdue" %}<div class="status-text overdue small">{{ inv.days_overdue }} day{{ "s" if inv.days_overdue != 1 }} late</div>{% endif %}
+          </td>
+          <td class="num">{{ inv.total | money(inv.currency) }}</td>
+          <td>
+            <span class="badge {{ st }}">{{ {"paid": "✓ Paid", "overdue": "⚠ Overdue", "unpaid": "Unpaid"}[st] }}</span>
+            {% if inv.paid_date %}<div class="muted small">{{ inv.paid_date.strftime("%d %b") }}</div>{% endif %}
+          </td>
+          <td class="actions">
+            {% if inv.status == "paid" %}
+              <form class="inline" method="post" action="/invoices/{{ inv.id }}/unpaid">
+                <input type="hidden" name="back" value="{{ back }}">
+                <button class="btn small ghost" title="Mark as not paid">Undo paid</button>
+              </form>
+            {% else %}
+              <form class="inline" method="post" action="/invoices/{{ inv.id }}/paid">
+                <input type="hidden" name="back" value="{{ back }}">
+                <button class="btn small success">Mark paid</button>
+              </form>
+            {% endif %}
+            <a class="btn small ghost" href="/invoices/{{ inv.id }}/pdf" target="_blank">PDF</a>
+            <a class="btn small ghost" href="/invoices/{{ inv.id }}/edit">Edit</a>
+            <form class="inline" method="post" action="/invoices/{{ inv.id }}/delete"
+                  onsubmit="return confirm('Delete invoice {{ inv.number }}? This cannot be undone.')">
+              <button class="btn small danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% elif status == "all" %}
+      <p class="empty">No invoices yet. <a href="/invoices/new">Create your first one</a>.</p>
+    {% else %}
+      <p class="empty">No {{ status }} invoices.</p>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}

@@ -1,13 +1,14 @@
 # Income Streams
 
-Two products that complement each other:
+Products, each in its own folder:
 
 | | Stream | Model | Folder |
 |---|---|---|---|
 | 1 | **OfficeKit**: office automation toolkit (Excel, PDF, rename, CSV, scraping) | One-off sale, $12–19 on Gumroad / Lemon Squeezy. Also serves as your **freelance portfolio** | [`toolkit/`](toolkit/) |
 | 2 | **SiteWatch**: website uptime & SSL monitoring | SaaS: free tier + $9/month Pro via Stripe | [`sitewatch/`](sitewatch/) |
+| 3 | **Invoice app**: invoice generator for freelancers and small businesses (built, not yet online) | SaaS: Free + Pro (£6/month) | [`invoice-app/`](invoice-app/) |
 
-**Why these two:** OfficeKit can earn within days and needs no hosting. SiteWatch takes longer to build an
+**Why OfficeKit + SiteWatch:** OfficeKit can earn within days and needs no hosting. SiteWatch takes longer to build an
 audience, but subscriptions add up month after month. The freelance work OfficeKit attracts also pays
 the bills while SiteWatch grows.
 

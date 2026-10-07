@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Invoice Generator{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+{% if user %}
+<nav>
+  <div class="inner">
+    <a class="brand" href="/invoices">🧾 Invoicer</a>
+    {% set path = request.url.path %}
+    <a href="/invoices" class="{{ 'active' if path.startswith('/invoices') }}">Invoices</a>
+    <a href="/clients" class="{{ 'active' if path.startswith('/clients') }}">Clients</a>
+    <a href="/settings" class="{{ 'active' if path.startswith('/settings') }}">Settings</a>
+    {% if billing.is_pro(user) %}
+      <a href="/billing" class="{{ 'active' if path.startswith('/billing') }}">Billing</a>
+    {% else %}
+      <a href="/billing" class="upgrade-pill">Upgrade</a>
+    {% endif %}
+    <form method="post" action="/logout"><button class="link-btn">Log out</button></form>
+  </div>
+</nav>
+{% endif %}
+{% block body %}{% endblock %}
+</body>
+</html>

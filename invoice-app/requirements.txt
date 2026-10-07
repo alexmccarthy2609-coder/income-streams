@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+jinja2
+python-multipart
+fpdf2
+sqlalchemy
+itsdangerous
+stripe
+python-dotenv
+# for running the tests
+pytest
+httpx

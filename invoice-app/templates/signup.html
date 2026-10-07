@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Sign up · Invoice Generator{% endblock %}
+{% block body %}
+<main class="narrow">
+  <h1>Create your account</h1>
+  <p class="sub">Professional invoices in seconds. Free to start.</p>
+  {% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+  <form method="post" action="/signup" class="card stack">
+    <div><label for="email">Email</label>
+      <input id="email" name="email" type="email" value="{{ email }}" required autofocus></div>
+    <div><label for="password">Password (at least 8 characters)</label>
+      <input id="password" name="password" type="password" minlength="8" required></div>
+    <button class="btn full">Create account</button>
+  </form>
+  <p>Already have an account? <a href="/login">Log in</a></p>
+</main>
+{% endblock %}
