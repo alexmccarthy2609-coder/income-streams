@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Log in · Invoice Generator{% endblock %}
+{% block body %}
+<main class="narrow">
+  <h1>Welcome back</h1>
+  <p class="sub">Log in to create and manage your invoices.</p>
+  {% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+  <form method="post" action="/login" class="card stack">
+    <div><label for="email">Email</label>
+      <input id="email" name="email" type="email" value="{{ email }}" required autofocus></div>
+    <div><label for="password">Password</label>
+      <input id="password" name="password" type="password" required></div>
+    <button class="btn full">Log in</button>
+  </form>
+  <p>New here? <a href="/signup">Create a free account</a></p>
+</main>
+{% endblock %}

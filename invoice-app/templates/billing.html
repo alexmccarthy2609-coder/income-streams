@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Billing · Invoice Generator{% endblock %}
+{% block body %}
+<main>
+  <h1>Plan &amp; billing</h1>
+  <p class="sub">
+    {% if billing.is_pro(user) %}You're on <strong>Pro</strong>: unlimited invoices.
+    {% else %}You're on the <strong>Free</strong> plan: {{ billing.invoices_used(user) }} of {{ billing.FREE_INVOICES_PER_MONTH }} invoices used this month.
+    {% endif %}
+  </p>
+
+  {% if message %}<div class="alert {{ message[0] }}">{{ message[1] }}</div>{% endif %}
+  {% if not billing.stripe_ready() %}
+    <div class="alert info">
+      <strong>Payments aren't switched on yet.</strong> Add your Stripe keys to the <code>.env</code> file
+      (see the README, "Set up payments") and restart the app.
+    </div>
+  {% endif %}
+  {% if user.subscription_status == "past_due" %}
+    <div class="alert error">Your last payment didn't go through. Please update your card to keep Pro.</div>
+  {% endif %}
+
+  <div class="plans">
+    <div class="card plan {{ 'current' if not billing.is_pro(user) }}">
+      <h2>Free</h2>
+      <div class="price">£0</div>
+      <ul>
+        <li>{{ billing.FREE_INVOICES_PER_MONTH }} new invoices per month</li>
+        <li>Saved clients</li>
+        <li>Paid / overdue tracking</li>
+      </ul>
+      {% if not billing.is_pro(user) %}<div class="plan-badge">Your plan</div>{% endif %}
+    </div>
+
+    <div class="card plan pro {{ 'current' if billing.is_pro(user) }}">
+      <h2>Pro</h2>
+      <div class="price">{{ billing.PRO_PRICE_LABEL.split('/')[0] }}<span>/month</span></div>
+      <ul>
+        <li><strong>Unlimited</strong> invoices</li>
+        <li>Everything in Free</li>
+        <li>Cancel any time</li>
+      </ul>
+      {% if billing.is_pro(user) %}
+        <div class="plan-badge">Your plan</div>
+        {% if user.stripe_customer_id %}
+          <form method="post" action="/billing/portal">
+            <button class="btn ghost full-width" {{ "disabled" if not billing.stripe_ready() }}>Manage subscription</button>
+          </form>
+          <p class="muted small">Change card, download receipts or cancel, on Stripe's secure page.</p>
+        {% endif %}
+      {% else %}
+        <form method="post" action="/billing/checkout">
+          <button class="btn full-width" {{ "disabled" if not billing.stripe_ready() }}>Upgrade to Pro</button>
+        </form>
+        <p class="muted small">🔒 Secure payment by Stripe. Card details never touch our servers.</p>
+      {% endif %}
+    </div>
+  </div>
+</main>
+{% endblock %}

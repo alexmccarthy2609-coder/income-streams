@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if client else "New" }} client · Invoice Generator{% endblock %}
+{% block body %}
+<main>
+  <h1>{{ "Edit client" if client else "New client" }}</h1>
+  <p class="sub"><a href="/clients">← Back to clients</a></p>
+  <form method="post" action="{{ '/clients/%d/edit' % client.id if client else '/clients/new' }}" class="card stack">
+    <div><label for="name">Client name *</label>
+      <input id="name" name="name" value="{{ client.name if client }}" required autofocus></div>
+    <div><label for="details">Address / email</label>
+      <textarea id="details" name="details">{{ client.details if client }}</textarea></div>
+    <button class="btn">Save client</button>
+  </form>
+</main>
+{% endblock %}

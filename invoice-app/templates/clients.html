@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Clients · Invoice Generator{% endblock %}
+{% block body %}
+<main>
+  <div class="page-head">
+    <h1>Clients</h1>
+    <a class="btn" href="/clients/new">+ New client</a>
+  </div>
+  <p class="sub">Clients are also saved automatically the first time you invoice them.</p>
+
+  <div class="card table-wrap">
+    {% if clients %}
+    <table>
+      <thead><tr><th>Name</th><th>Details</th><th></th></tr></thead>
+      <tbody>
+      {% for c in clients %}
+        <tr>
+          <td><strong>{{ c.name }}</strong></td>
+          <td>{{ c.details.splitlines() | first if c.details }}</td>
+          <td class="actions">
+            <a class="btn small ghost" href="/clients/{{ c.id }}/edit">Edit</a>
+            <form class="inline" method="post" action="/clients/{{ c.id }}/delete"
+                  onsubmit="return confirm('Delete this client? Invoices already sent to them are kept.')">
+              <button class="btn small danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="empty">No clients yet.</p>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}
