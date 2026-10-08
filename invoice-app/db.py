@@ -42,6 +42,7 @@ class User(Base):
     # Business details, used to pre-fill every new invoice.
     business_name: Mapped[str] = mapped_column(String(200), default="")
     business_details: Mapped[str] = mapped_column(Text, default="")
+    vat_number: Mapped[str] = mapped_column(String(30), default="")
     default_currency: Mapped[str] = mapped_column(String(3), default="GBP")
     default_tax_rate: Mapped[float] = mapped_column(default=0)
     default_notes: Mapped[str] = mapped_column(Text, default="")
@@ -81,6 +82,7 @@ class Invoice(Base):
 
     number: Mapped[str] = mapped_column(String(50))
     invoice_date: Mapped[date]
+    supply_date: Mapped[date | None] = mapped_column(default=None)  # when the work was done
     due_date: Mapped[date]
     currency: Mapped[str] = mapped_column(String(3))
     tax_rate: Mapped[float] = mapped_column(default=0)
@@ -92,6 +94,7 @@ class Invoice(Base):
     # editing a client later doesn't change invoices already sent.
     business_name: Mapped[str] = mapped_column(String(200))
     business_details: Mapped[str] = mapped_column(Text, default="")
+    vat_number: Mapped[str] = mapped_column(String(30), default="")
     client_name: Mapped[str] = mapped_column(String(200))
     client_details: Mapped[str] = mapped_column(Text, default="")
 
@@ -146,7 +149,8 @@ class InvoiceItem(Base):
 # Columns added after the first version. If your invoices.db was made by an
 # older version of the app, they are added automatically when it starts.
 NEW_COLUMNS = {
-    "invoices": {"paid_date": "DATE"},
+    "invoices": {"paid_date": "DATE", "supply_date": "DATE",
+                 "vat_number": "VARCHAR(30) NOT NULL DEFAULT ''"},
     "users": {
         "plan": "VARCHAR(10) NOT NULL DEFAULT 'free'",
         "stripe_customer_id": "VARCHAR(100)",
@@ -154,6 +158,7 @@ NEW_COLUMNS = {
         "subscription_status": "VARCHAR(30)",
         "usage_month": "VARCHAR(7) NOT NULL DEFAULT ''",
         "usage_count": "INTEGER NOT NULL DEFAULT 0",
+        "vat_number": "VARCHAR(30) NOT NULL DEFAULT ''",
     },
 }
 

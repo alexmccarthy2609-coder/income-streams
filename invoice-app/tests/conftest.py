@@ -42,3 +42,10 @@ def no_real_stripe(monkeypatch):
     """Tests never use real Stripe keys, even if your .env has them."""
     for name in ["STRIPE_SECRET_KEY", "STRIPE_PRICE_ID", "STRIPE_WEBHOOK_SECRET", "BASE_URL"]:
         monkeypatch.delenv(name, raising=False)
+
+
+@pytest.fixture(autouse=True)
+def reset_login_limits():
+    """Each test starts with no remembered wrong-password attempts."""
+    import main
+    main._failed_logins.clear()

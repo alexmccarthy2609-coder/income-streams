@@ -15,6 +15,9 @@
                  value="{{ inv.business_name if inv else user.business_name }}"></div>
         <div><label for="business_details">Address, email, phone</label>
           <textarea id="business_details" name="business_details">{{ inv.business_details if inv else user.business_details }}</textarea></div>
+        <div><label for="vat_number">VAT number <span class="muted">(if VAT registered)</span></label>
+          <input id="vat_number" name="vat_number" placeholder="e.g. GB 123 4567 89"
+                 value="{{ inv.vat_number if inv else user.vat_number }}"></div>
       </div>
     </div>
 
@@ -49,6 +52,9 @@
         <div><label for="invoice_date">Invoice date *</label>
           <input id="invoice_date" type="date" name="invoice_date" required
                  value="{{ inv.invoice_date.isoformat() if inv else today }}"></div>
+        <div><label for="supply_date">Work done on <span class="muted">(if different)</span></label>
+          <input id="supply_date" type="date" name="supply_date"
+                 value="{{ inv.supply_date.isoformat() if inv and inv.supply_date else '' }}"></div>
         <div><label for="due_date">Due date *</label>
           <input id="due_date" type="date" name="due_date" required
                  value="{{ inv.due_date.isoformat() if inv else due }}"></div>
@@ -67,7 +73,7 @@
     <div class="card">
       <h2>Items</h2>
       <div class="item item-head"><span>Description</span><span>Qty</span><span>Price</span><span></span></div>
-      <div id="items"></div>
+      <div id="items" data-items='{{ (inv.items | map("item_json") | list | tojson) if inv else "[]" }}'></div>
       <button type="button" class="add" onclick="addItem()">+ Add item</button>
       <div class="total" id="total"></div>
     </div>
@@ -81,57 +87,5 @@
   </form>
 </main>
 
-<script>
-  // Adds a line-item row (description, quantity, price, remove button).
-  function addItem(description = "", quantity = 1, price = 0) {
-    const row = document.createElement("div");
-    row.className = "item";
-    row.innerHTML = `
-      <input name="description" placeholder="Description" required>
-      <input name="quantity" type="number" min="0" step="any" aria-label="Quantity">
-      <input name="unit_price" type="number" min="0" step="0.01" aria-label="Unit price">
-      <button type="button" title="Remove" onclick="removeItem(this)">✕</button>`;
-    row.querySelector("[name=description]").value = description;
-    row.querySelector("[name=quantity]").value = quantity;
-    row.querySelector("[name=unit_price]").value = price;
-    document.getElementById("items").appendChild(row);
-    updateTotal();
-  }
-
-  function removeItem(btn) {
-    if (document.querySelectorAll("#items .item").length > 1) btn.parentElement.remove();
-    updateTotal();
-  }
-
-  // Shows a live running total as the user types.
-  function updateTotal() {
-    let subtotal = 0;
-    document.querySelectorAll("#items .item").forEach(row => {
-      const q = parseFloat(row.querySelector("[name=quantity]").value) || 0;
-      const p = parseFloat(row.querySelector("[name=unit_price]").value) || 0;
-      subtotal += q * p;
-    });
-    const tax = subtotal * (parseFloat(document.getElementById("tax_rate").value) || 0) / 100;
-    const sym = document.getElementById("currency").selectedOptions[0].dataset.symbol;
-    document.getElementById("total").textContent = "Total: " + sym + (subtotal + tax).toFixed(2);
-  }
-
-  // Picking a saved client fills in their name and address.
-  const picker = document.getElementById("client-picker");
-  if (picker) picker.addEventListener("change", () => {
-    const opt = picker.selectedOptions[0];
-    document.getElementById("client_name").value = opt.dataset.name || "";
-    document.getElementById("client_details").value = opt.dataset.details || "";
-  });
-
-  document.addEventListener("input", updateTotal);
-  document.addEventListener("change", updateTotal);
-
-  {% if inv %}
-    {% for i in inv.items %}addItem({{ i.description | tojson }}, {{ i.quantity }}, {{ i.unit_price }});
-    {% endfor %}
-  {% else %}
-    addItem();
-  {% endif %}
-</script>
+<script src="/static/invoice-form.js"></script>
 {% endblock %}

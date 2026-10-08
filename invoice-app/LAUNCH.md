@@ -67,10 +67,20 @@ r/UKBusiness. Some have a weekly "promote your business" or feedback thread; pos
 >
 > (Mods, please delete if this isn't allowed!)
 
+### Share the free generator (easiest to post anywhere)
+The no-signup generator is the easiest thing to share, because it's genuinely useful without an account:
+**https://invoicer-gs6w.onrender.com/free-invoice-generator**
+> Free UK invoice generator: fill in a form, download a PDF, no sign-up and nothing stored. I made it;
+> feedback welcome!
+
+Also useful when answering questions: the guide at
+**https://invoicer-gs6w.onrender.com/guides/how-to-write-an-invoice-uk**
+
 ### Replying to people who need it
 Search Reddit / Facebook / forums for questions like *"best free invoice app"*, *"how do I make an
 invoice as a sole trader"*, *"invoice template UK"*. Answer the question properly first, then add:
-> (Disclosure: I made a free tool for this: https://invoicer-gs6w.onrender.com. Happy for feedback.)
+> (Disclosure: I made a free tool for this, no sign-up needed:
+> https://invoicer-gs6w.onrender.com/free-invoice-generator. Happy for feedback.)
 
 ---
 

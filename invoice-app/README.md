@@ -9,7 +9,10 @@ saved clients (added automatically when you invoice someone new) ·
 invoice history with edit, re-download and delete · automatic invoice numbers ·
 dashboard with money owed, overdue and paid this month · mark invoices paid ·
 overdue invoices flagged automatically · chart of money received per month ·
-Free plan (3 invoices/month) and Pro plan (£6/month, unlimited) paid through Stripe.
+Free plan (3 invoices/month) and Pro plan (£6/month, unlimited) paid through Stripe ·
+VAT number and supply date on invoices · € and accented characters in PDFs ·
+free no-signup invoice generator and a UK invoicing guide (for Google) · CSV export ·
+self-service account deletion · limits on password guessing.
 
 ## Files
 | File | What it does |
@@ -24,6 +27,9 @@ Free plan (3 invoices/month) and Pro plan (£6/month, unlimited) paid through St
 | `../render.yaml` | Tells Render how to run the app and its database online |
 | `templates/` | The HTML pages (`base.html` is the shared layout and menu) |
 | `static/style.css` | How everything looks |
+| `static/invoice-form.js` | Line items and live total on the invoice forms |
+| `fonts/` | DejaVu Sans font, so PDFs can show €, accents etc. (free licence included) |
+| `LAUNCH.md` | Ready-to-send messages for finding your first users |
 | `tests/` | Automated checks that the app works |
 | `requirements.txt` | The Python libraries the app needs |
 
@@ -53,7 +59,7 @@ app, your existing `invoices.db` is upgraded automatically when the app starts.
 ```
 pytest
 ```
-You should see `25 passed`. Run this after every change to check nothing broke.
+You should see `34 passed`. Run this after every change to check nothing broke.
 
 ## Set up payments (Stripe)
 The app works without this; the Upgrade button stays greyed out until it's done.

@@ -1,8 +1,11 @@
 """The web app. Run it with:  uvicorn main:app --reload
 Then open http://127.0.0.1:8000 in your browser."""
 
+import csv
+import io
 import os
 import re
+import time
 
 from dotenv import load_dotenv
 
@@ -67,8 +70,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 templates.env.globals["currencies"] = CURRENCIES
 templates.env.globals["billing"] = billing
+templates.env.filters["item_json"] = lambda i: {
+    "description": i.description, "quantity": i.quantity, "unit_price": i.unit_price}
 templates.env.globals["app_name"] = APP_NAME
 templates.env.globals["contact_email"] = CONTACT_EMAIL
+# The site's public address, used in links for Google (canonical links, sitemap).
+SITE_URL = (os.environ.get("BASE_URL") or os.environ.get("RENDER_EXTERNAL_URL") or "").rstrip("/")
+templates.env.globals["site_url"] = SITE_URL
 templates.env.filters["money"] = lambda v, cur: f"{CURRENCIES.get(cur, '')}{v:,.2f}"
 # Like money, but drops ".00" — used on the chart where space is tight.
 templates.env.filters["money_short"] = lambda v, cur: f"{CURRENCIES.get(cur, '')}{v:,.0f}" if v == int(v) else f"{CURRENCIES.get(cur, '')}{v:,.2f}"
@@ -114,6 +122,67 @@ def terms(request: Request):
     return render(request, "terms.html", user=None)
 
 
+# ---------------------------------------------------------------- Free public pages (for Google)
+
+@app.get("/free-invoice-generator", response_class=HTMLResponse)
+def generator_page(request: Request):
+    today = date.today()
+    return render(request, "generator.html", user=None, today=today.isoformat(),
+                  due=(today + timedelta(days=14)).isoformat())
+
+
+@app.post("/free-invoice-generator")
+def generator_pdf(
+    business_name: str = Form(...),
+    business_details: str = Form(""),
+    vat_number: str = Form(""),
+    client_name: str = Form(...),
+    client_details: str = Form(""),
+    invoice_number: str = Form(...),
+    invoice_date: date = Form(...),
+    supply_date: str = Form(""),
+    due_date: date = Form(...),
+    currency: str = Form("GBP"),
+    tax_rate: float = Form(0),
+    notes: str = Form(""),
+    description: list[str] = Form(...),
+    quantity: list[float] = Form(...),
+    unit_price: list[float] = Form(...),
+):
+    """Make a PDF without an account. Nothing is saved: the invoice only exists for this request."""
+    invoice = Invoice()
+    fill_invoice(
+        invoice, business_name=business_name, business_details=business_details, vat_number=vat_number,
+        client_name=client_name, client_details=client_details, invoice_number=invoice_number,
+        invoice_date=invoice_date, supply_date=supply_date, due_date=due_date, currency=currency,
+        tax_rate=tax_rate, notes=notes, description=description, quantity=quantity, unit_price=unit_price,
+    )
+    return pdf_response(invoice)
+
+
+@app.get("/guides/how-to-write-an-invoice-uk", response_class=HTMLResponse)
+def guide_page(request: Request):
+    return render(request, "guide_invoice_uk.html", user=None)
+
+
+PUBLIC_PAGES = ["/", "/free-invoice-generator", "/guides/how-to-write-an-invoice-uk",
+                "/signup", "/privacy", "/terms"]
+
+
+@app.get("/robots.txt")
+def robots(request: Request):
+    lines = ["User-agent: *", "Disallow: /invoices", "Disallow: /clients", "Disallow: /settings",
+             "Disallow: /billing", f"Sitemap: {base_url(request)}/sitemap.xml"]
+    return Response("\n".join(lines) + "\n", media_type="text/plain")
+
+
+@app.get("/sitemap.xml")
+def sitemap(request: Request):
+    urls = "".join(f"<url><loc>{base_url(request)}{p}</loc></url>" for p in PUBLIC_PAGES)
+    xml = f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>'
+    return Response(xml, media_type="application/xml")
+
+
 @app.get("/healthz")
 def healthcheck(db: Session = Depends(get_db)):
     """Render checks this address to know the app is up and can reach its database."""
@@ -147,6 +216,30 @@ def signup(request: Request, email: str = Form(...), password: str = Form(...),
     return go("/settings?welcome=1")
 
 
+# Slow down password guessing: after too many wrong passwords, refuse for a while.
+# (Kept in memory, which is fine for a single server.)
+LOGIN_WINDOW = 15 * 60  # seconds
+MAX_FAILS_PER_EMAIL, MAX_FAILS_PER_IP = 10, 30
+_failed_logins: dict[str, list[float]] = {}
+
+
+def _recent_fails(key: str) -> list[float]:
+    cutoff = time.time() - LOGIN_WINDOW
+    fails = [t for t in _failed_logins.get(key, []) if t > cutoff]
+    _failed_logins[key] = fails
+    return fails
+
+
+def too_many_attempts(email: str, ip: str) -> bool:
+    return (len(_recent_fails(f"email:{email}")) >= MAX_FAILS_PER_EMAIL
+            or len(_recent_fails(f"ip:{ip}")) >= MAX_FAILS_PER_IP)
+
+
+def record_failed_login(email: str, ip: str) -> None:
+    for key in (f"email:{email}", f"ip:{ip}"):
+        _recent_fails(key).append(time.time())
+
+
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
     return render(request, "login.html", error=None, email="")
@@ -156,8 +249,13 @@ def login_page(request: Request):
 def login(request: Request, email: str = Form(...), password: str = Form(...),
           db: Session = Depends(get_db)):
     email = email.strip().lower()
+    ip = request.client.host if request.client else "unknown"
+    if too_many_attempts(email, ip):
+        return render(request, "login.html", email=email,
+                      error="Too many wrong attempts. Please wait 15 minutes and try again.")
     user = db.scalar(select(User).where(User.email == email))
     if not user or not verify_password(password, user.password_hash):
+        record_failed_login(email, ip)
         return render(request, "login.html", error="Wrong email or password.", email=email)
     request.session["user_id"] = user.id
     return go("/invoices")
@@ -179,6 +277,7 @@ def save_settings(
     request: Request,
     business_name: str = Form(""),
     business_details: str = Form(""),
+    vat_number: str = Form(""),
     default_currency: str = Form("GBP"),
     default_tax_rate: float = Form(0),
     payment_terms_days: int = Form(14),
@@ -189,6 +288,7 @@ def save_settings(
 ):
     user.business_name = business_name.strip()
     user.business_details = business_details.strip()
+    user.vat_number = vat_number.strip()
     user.default_currency = default_currency if default_currency in CURRENCIES else "GBP"
     user.default_tax_rate = max(default_tax_rate, 0)
     user.payment_terms_days = max(payment_terms_days, 0)
@@ -197,6 +297,50 @@ def save_settings(
     if next == "/invoices/new":  # first-time setup: go straight to the first invoice
         return go(next)
     return render(request, "settings.html", user=user, welcome=False, saved=True)
+
+
+@app.get("/settings/export.csv")
+def export_invoices(user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """All your invoices as a spreadsheet file (opens in Excel, Numbers or Google Sheets)."""
+    invoices = db.scalars(
+        select(Invoice).where(Invoice.user_id == user.id)
+        .options(selectinload(Invoice.items)).order_by(Invoice.invoice_date, Invoice.id)
+    ).all()
+    out = io.StringIO()
+    writer = csv.writer(out)
+    writer.writerow(["Invoice number", "Client", "Invoice date", "Supply date", "Due date", "Currency",
+                     "Subtotal", "Tax rate %", "Tax", "Total", "Status", "Paid date", "Items"])
+    for inv in invoices:
+        items = "; ".join(f"{i.description} x{i.quantity:g} @ {i.unit_price:.2f}" for i in inv.items)
+        writer.writerow([inv.number, inv.client_name, inv.invoice_date, inv.supply_date or "", inv.due_date,
+                         inv.currency, f"{inv.subtotal:.2f}", f"{inv.tax_rate:g}", f"{inv.tax:.2f}",
+                         f"{inv.total:.2f}", inv.display_status, inv.paid_date or "", items])
+    return Response(out.getvalue(), media_type="text/csv",
+                    headers={"Content-Disposition": 'attachment; filename="invoices.csv"'})
+
+
+@app.post("/settings/delete-account")
+def delete_account(request: Request, password: str = Form(...), confirm: str = Form(""),
+                   user: User = Depends(current_user), db: Session = Depends(get_db)):
+    """Permanently delete the account and all its data, after checking the password."""
+    def refuse(message):
+        return render(request, "settings.html", user=user, welcome=False, saved=False, delete_error=message)
+
+    if confirm.strip().upper() != "DELETE":
+        return refuse('Type DELETE in the box to confirm.')
+    if not verify_password(password, user.password_hash):
+        return refuse("That password isn't right.")
+    # Stop any Pro subscription first, so nobody is charged after leaving.
+    if user.stripe_subscription_id and user.plan == "pro":
+        try:
+            billing.cancel_subscription_now(user)
+        except Exception:
+            return refuse("We couldn't cancel your Pro subscription automatically. Please cancel it on the "
+                          "Billing page (Manage subscription) first, then delete your account.")
+    db.delete(user)
+    db.commit()
+    request.session.clear()
+    return go("/?deleted=1")
 
 
 # ---------------------------------------------------------------- Clients
@@ -389,10 +533,12 @@ def save_invoice(
     invoice_id: int | None = None,
     business_name: str = Form(...),
     business_details: str = Form(""),
+    vat_number: str = Form(""),
     client_name: str = Form(...),
     client_details: str = Form(""),
     invoice_number: str = Form(...),
     invoice_date: date = Form(...),
+    supply_date: str = Form(""),
     due_date: date = Form(...),
     currency: str = Form("GBP"),
     tax_rate: float = Form(0),
@@ -424,19 +570,15 @@ def save_invoice(
     # First invoice? Remember the business details for next time.
     if not user.business_name:
         user.business_name, user.business_details = business_name.strip(), business_details.strip()
+    if vat_number.strip() and not user.vat_number:
+        user.vat_number = vat_number.strip()
 
-    invoice.number = invoice_number.strip()
-    invoice.invoice_date, invoice.due_date = invoice_date, due_date
-    invoice.currency = currency if currency in CURRENCIES else "GBP"
-    invoice.tax_rate = max(tax_rate, 0)
-    invoice.notes = notes.strip()
-    invoice.business_name, invoice.business_details = business_name.strip(), business_details.strip()
-    invoice.client_name, invoice.client_details = client_name, client_details
-    invoice.items = [
-        InvoiceItem(position=n, description=d.strip(), quantity=q, unit_price=p)
-        for n, (d, q, p) in enumerate(zip(description, quantity, unit_price))
-        if d.strip()  # skip empty rows
-    ]
+    fill_invoice(
+        invoice, business_name=business_name, business_details=business_details, vat_number=vat_number,
+        client_name=client_name, client_details=client_details, invoice_number=invoice_number,
+        invoice_date=invoice_date, supply_date=supply_date, due_date=due_date, currency=currency,
+        tax_rate=tax_rate, notes=notes, description=description, quantity=quantity, unit_price=unit_price,
+    )
     db.add(invoice)
     db.flush()  # gives the new client and invoice their ids
     invoice.client_id = client.id
@@ -444,17 +586,20 @@ def save_invoice(
     return go(f"/invoices?created={invoice.id}")
 
 
-@app.get("/invoices/{invoice_id}/pdf")
-def invoice_pdf(invoice_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)):
-    inv = get_invoice(db, user, invoice_id)
+def pdf_response(inv: Invoice) -> Response:
+    """Draw an invoice as a PDF (works for saved invoices and the no-signup generator)."""
+    def fmt(d):
+        return d.strftime("%d %b %Y") if d else ""
     pdf_bytes = build_invoice_pdf({
         "business_name": inv.business_name,
         "business_details": inv.business_details,
+        "vat_number": inv.vat_number,
         "client_name": inv.client_name,
         "client_details": inv.client_details,
         "invoice_number": inv.number,
-        "invoice_date": inv.invoice_date.strftime("%d %b %Y"),
-        "due_date": inv.due_date.strftime("%d %b %Y"),
+        "invoice_date": fmt(inv.invoice_date),
+        "supply_date": fmt(inv.supply_date),
+        "due_date": fmt(inv.due_date),
         "currency_symbol": CURRENCIES.get(inv.currency, ""),
         "tax_rate": inv.tax_rate,
         "notes": inv.notes,
@@ -473,6 +618,38 @@ def invoice_pdf(invoice_id: int, user: User = Depends(current_user), db: Session
         media_type="application/pdf",
         headers={"Content-Disposition": f'inline; filename="invoice-{safe_number}.pdf"'},
     )
+
+
+def parse_optional_date(value: str) -> date | None:
+    try:
+        return date.fromisoformat(value) if value.strip() else None
+    except ValueError:
+        return None
+
+
+def fill_invoice(invoice: Invoice, *, business_name, business_details, vat_number, client_name,
+                 client_details, invoice_number, invoice_date, supply_date, due_date, currency,
+                 tax_rate, notes, description, quantity, unit_price) -> None:
+    """Copy the submitted form into an invoice (shared by saved invoices and the free generator)."""
+    invoice.number = invoice_number.strip()
+    invoice.invoice_date, invoice.due_date = invoice_date, due_date
+    invoice.supply_date = parse_optional_date(supply_date)
+    invoice.currency = currency if currency in CURRENCIES else "GBP"
+    invoice.tax_rate = max(tax_rate, 0)
+    invoice.notes = notes.strip()
+    invoice.business_name, invoice.business_details = business_name.strip(), business_details.strip()
+    invoice.vat_number = vat_number.strip()
+    invoice.client_name, invoice.client_details = client_name.strip(), client_details.strip()
+    invoice.items = [
+        InvoiceItem(position=n, description=d.strip(), quantity=q, unit_price=p)
+        for n, (d, q, p) in enumerate(zip(description, quantity, unit_price))
+        if d.strip()  # skip empty rows
+    ]
+
+
+@app.get("/invoices/{invoice_id}/pdf")
+def invoice_pdf(invoice_id: int, user: User = Depends(current_user), db: Session = Depends(get_db)):
+    return pdf_response(get_invoice(db, user, invoice_id))
 
 
 @app.post("/invoices/{invoice_id}/delete")

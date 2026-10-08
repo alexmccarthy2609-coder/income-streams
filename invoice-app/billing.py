@@ -111,6 +111,12 @@ def fetch_checkout_session(session_id: str) -> dict:
     }
 
 
+def cancel_subscription_now(user: User) -> None:
+    """Cancel immediately (used when someone deletes their account). Raises an error if Stripe refuses."""
+    _use_key()
+    stripe.Subscription.cancel(user.stripe_subscription_id)
+
+
 def parse_webhook(payload: bytes, signature: str | None) -> dict:
     """Check a webhook really came from Stripe (raises an error if not), then return the event."""
     stripe.Webhook.construct_event(payload, signature, os.environ.get("STRIPE_WEBHOOK_SECRET", ""))

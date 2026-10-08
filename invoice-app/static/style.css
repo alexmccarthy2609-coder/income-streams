@@ -168,6 +168,21 @@ td.actions > * { margin-left: 4px; }
 .pricing .plan h3 { margin: 0; color: var(--muted); text-transform: uppercase; font-size: 15px; letter-spacing: .04em; }
 .cta { text-align: center; background: #fff; border-radius: 16px; padding: 40px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 
+.danger-zone { border: 1px solid #fecaca; }
+.danger-zone h2 { color: var(--red); }
+
+/* Free generator and guide pages */
+.upsell { background: #eff6ff; box-shadow: none; }
+.upsell h2 { color: #1e3a8a; }
+.faq h3, .article h2 { margin-top: 24px; }
+.faq h3 { font-size: 16px; margin-bottom: 4px; }
+.faq p { margin-top: 0; color: #374151; line-height: 1.55; }
+.article .lead { font-size: 18px; }
+.callout { background: #eff6ff; box-shadow: none; line-height: 1.6; }
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 28px; position: relative; margin: 6px 0; }
+.checklist li::before { content: "✓"; position: absolute; left: 4px; color: var(--green); font-weight: 800; }
+
 @media (max-width: 800px) {
   .hero { grid-template-columns: 1fr; gap: 32px; padding-top: 16px; }
   .hero h1 { font-size: 36px; }
@@ -175,6 +190,7 @@ td.actions > * { margin-left: 4px; }
 }
 
 @media (max-width: 560px) {
+  .hide-small { display: none; }
   nav .inner { gap: 12px; }
   nav a, nav .link-btn { font-size: 14px; }
   .item { grid-template-columns: 1fr 1fr 36px; }

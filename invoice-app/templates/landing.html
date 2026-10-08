@@ -4,15 +4,12 @@
   <meta name="description" content="Create professional PDF invoices in seconds, save your clients, and see who owes you money. Free for 3 invoices a month.">
 {% endblock %}
 {% block body %}
-<header class="public-nav">
-  <div class="inner">
-    <a class="brand" href="/">🧾 {{ app_name }}</a>
-    <a href="/login">Log in</a>
-    <a class="btn small" href="/signup">Sign up free</a>
-  </div>
-</header>
+{% include "_public_nav.html" %}
 
 <main class="landing">
+  {% if request.query_params.get("deleted") %}
+    <div class="alert ok" style="margin-top:16px">Your account and all its data have been deleted.</div>
+  {% endif %}
   <section class="hero">
     <div class="hero-text">
       <h1>Professional invoices in 60 seconds.</h1>
@@ -21,6 +18,7 @@
       <div class="hero-actions">
         <a class="btn big" href="/signup">Create your free account</a>
         <span class="muted">No card needed · 3 free invoices every month</span>
+        <a href="/free-invoice-generator">Just need one invoice? Use the free generator, no sign-up →</a>
       </div>
     </div>
 

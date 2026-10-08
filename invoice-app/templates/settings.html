@@ -14,6 +14,8 @@
           <input id="business_name" name="business_name" value="{{ user.business_name }}"></div>
         <div><label for="business_details">Address, email, phone</label>
           <textarea id="business_details" name="business_details">{{ user.business_details }}</textarea></div>
+        <div><label for="vat_number">VAT number <span class="muted">(if VAT registered)</span></label>
+          <input id="vat_number" name="vat_number" placeholder="e.g. GB 123 4567 89" value="{{ user.vat_number }}"></div>
       </div>
     </div>
 
@@ -38,5 +40,27 @@
     <button class="btn full">{{ "Save and create my first invoice" if welcome else "Save settings" }}</button>
     {% if welcome %}<input type="hidden" name="next" value="/invoices/new">{% endif %}
   </form>
+
+  {% if not welcome %}
+  <div class="card" style="margin-top:24px" id="your-data">
+    <h2>Your data</h2>
+    <p>Download all your invoices as a spreadsheet file (opens in Excel, Numbers or Google Sheets).</p>
+    <a class="btn ghost" href="/settings/export.csv">Download invoices (CSV)</a>
+  </div>
+
+  <div class="card danger-zone">
+    <h2>Delete account</h2>
+    <p>This permanently deletes your account, invoices and clients. It can't be undone.
+      {% if billing.is_pro(user) %}Your Pro subscription will be cancelled.{% endif %}</p>
+    {% if delete_error %}<div class="alert error">{{ delete_error }}</div>{% endif %}
+    <form method="post" action="/settings/delete-account" class="grid">
+      <div><label for="del_password">Your password</label>
+        <input id="del_password" name="password" type="password" required autocomplete="current-password"></div>
+      <div><label for="del_confirm">Type DELETE to confirm</label>
+        <input id="del_confirm" name="confirm" required autocomplete="off"></div>
+      <div style="align-self:end"><button class="btn danger full-width">Delete my account</button></div>
+    </form>
+  </div>
+  {% endif %}
 </main>
 {% endblock %}

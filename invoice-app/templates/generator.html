@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Free Invoice Generator UK: Download a PDF Invoice, No Sign-up · {{ app_name }}{% endblock %}
+{% block head %}
+  <meta name="description" content="Free UK invoice generator. Fill in a simple form and download a professional PDF invoice in seconds, with VAT if you need it. No sign-up needed.">
+  <link rel="canonical" href="{{ site_url }}/free-invoice-generator">
+{% endblock %}
+{% block body %}
+{% include "_public_nav.html" %}
+<main>
+  <h1>Free invoice generator</h1>
+  <p class="sub">Fill in the form and download a professional PDF invoice. <strong>No sign-up, completely free.</strong>
+    Nothing you type here is saved.</p>
+
+  <form method="post" action="/free-invoice-generator" target="_blank">
+    <div class="card">
+      <h2>Your business</h2>
+      <div class="grid">
+        <div><label for="business_name">Your name / business name *</label>
+          <input id="business_name" name="business_name" required></div>
+        <div><label for="business_details">Address, email, phone</label>
+          <textarea id="business_details" name="business_details"></textarea></div>
+        <div><label for="vat_number">VAT number <span class="muted">(if VAT registered)</span></label>
+          <input id="vat_number" name="vat_number" placeholder="e.g. GB 123 4567 89"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Bill to</h2>
+      <div class="grid">
+        <div><label for="client_name">Client name *</label><input id="client_name" name="client_name" required></div>
+        <div><label for="client_details">Client address / email</label>
+          <textarea id="client_details" name="client_details"></textarea></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Invoice details</h2>
+      <div class="grid">
+        <div><label for="invoice_number">Invoice number *</label>
+          <input id="invoice_number" name="invoice_number" value="INV-001" required></div>
+        <div><label for="invoice_date">Invoice date *</label>
+          <input id="invoice_date" type="date" name="invoice_date" value="{{ today }}" required></div>
+        <div><label for="supply_date">Work done on <span class="muted">(if different)</span></label>
+          <input id="supply_date" type="date" name="supply_date"></div>
+        <div><label for="due_date">Due date *</label>
+          <input id="due_date" type="date" name="due_date" value="{{ due }}" required></div>
+        <div><label for="currency">Currency</label>
+          <select name="currency" id="currency">
+            {% for code, symbol in currencies.items() %}
+              <option value="{{ code }}" data-symbol="{{ symbol }}">{{ code }} ({{ symbol }})</option>
+            {% endfor %}
+          </select></div>
+        <div><label for="tax_rate">VAT / tax %</label>
+          <input type="number" name="tax_rate" id="tax_rate" value="0" min="0" step="0.01"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Items</h2>
+      <div class="item item-head"><span>Description</span><span>Qty</span><span>Price</span><span></span></div>
+      <div id="items" data-items="[]"></div>
+      <button type="button" class="add" onclick="addItem()">+ Add item</button>
+      <div class="total" id="total"></div>
+    </div>
+
+    <div class="card">
+      <h2>Notes / payment details</h2>
+      <textarea name="notes" placeholder="e.g. Bank: 12-34-56  Account: 12345678. Thank you for your business!"></textarea>
+    </div>
+
+    <button class="btn full" type="submit">Download PDF invoice</button>
+  </form>
+
+  <div class="card upsell">
+    <h2>Invoicing regularly?</h2>
+    <p>Create a free account to <strong>save your details and clients</strong>, number invoices automatically,
+      and see <strong>who has paid and who's overdue</strong> at a glance.</p>
+    <a class="btn" href="/signup">Create a free account</a>
+  </div>
+
+  <section class="faq">
+    <h2>Questions</h2>
+    <h3>Is it really free?</h3>
+    <p>Yes. This generator is free with no limits, and there's nothing to sign up for.</p>
+    <h3>Is my information stored?</h3>
+    <p>No. Your invoice is turned into a PDF and sent straight back to you. We don't keep a copy.
+      If you want your invoices saved, <a href="/signup">create a free account</a>.</p>
+    <h3>What does a UK invoice need to include?</h3>
+    <p>A unique invoice number, your name and address, your client's name and address, what you're charging for,
+      when the work was done, the invoice date, the amounts and the total. VAT-registered businesses also need
+      their VAT number and the VAT amount. Read our
+      <a href="/guides/how-to-write-an-invoice-uk">guide to writing an invoice in the UK</a>.</p>
+  </section>
+</main>
+<script src="/static/invoice-form.js"></script>
+{% endblock %}
