@@ -20,9 +20,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
+from itsdangerous import BadSignature, URLSafeTimedSerializer
 from starlette.middleware.sessions import SessionMiddleware
 
 import billing
+import emails
 from auth import NotLoggedIn, current_user, hash_password, verify_password
 from db import Client, Invoice, InvoiceItem, User, create_tables, get_db
 from pdf import build_invoice_pdf
@@ -257,6 +259,77 @@ def login(request: Request, email: str = Form(...), password: str = Form(...),
     if not user or not verify_password(password, user.password_hash):
         record_failed_login(email, ip)
         return render(request, "login.html", error="Wrong email or password.", email=email)
+    request.session["user_id"] = user.id
+    return go("/invoices")
+
+
+# ---------------------------------------------------------------- Forgotten password
+
+# Reset links are signed with SECRET_KEY, expire after an hour, and include a fingerprint of the
+# current password, so a link stops working as soon as the password is changed.
+RESET_MAX_AGE = 60 * 60
+reset_signer = URLSafeTimedSerializer(SECRET_KEY, salt="password-reset")
+_reset_requests: dict[str, list[float]] = {}
+
+
+def make_reset_token(user: User) -> str:
+    return reset_signer.dumps({"id": user.id, "pw": user.password_hash[-16:]})
+
+
+def user_from_reset_token(token: str, db: Session) -> User | None:
+    try:
+        data = reset_signer.loads(token, max_age=RESET_MAX_AGE)
+    except BadSignature:  # also covers expired links
+        return None
+    user = db.get(User, data.get("id"))
+    return user if user and user.password_hash[-16:] == data.get("pw") else None
+
+
+@app.get("/forgot", response_class=HTMLResponse)
+def forgot_page(request: Request):
+    return render(request, "forgot.html", user=None, sent=False, email_ready=emails.email_ready())
+
+
+@app.post("/forgot", response_class=HTMLResponse)
+def forgot(request: Request, email: str = Form(...), db: Session = Depends(get_db)):
+    email = email.strip().lower()
+    if not emails.email_ready():
+        return render(request, "forgot.html", user=None, sent=False, email_ready=False)
+    # At most 3 emails per address per hour, so the form can't be used to spam someone.
+    cutoff = time.time() - 3600
+    recent = [t for t in _reset_requests.get(email, []) if t > cutoff]
+    user = db.scalar(select(User).where(User.email == email))
+    if user and len(recent) < 3:
+        _reset_requests[email] = recent + [time.time()]
+        link = f"{base_url(request)}/reset/{make_reset_token(user)}"
+        try:
+            emails.send_email(email, f"Reset your {APP_NAME} password",
+                              f"Hi,\n\nSomeone asked to reset the password for your {APP_NAME} account.\n"
+                              f"To choose a new password, open this link (it works for 1 hour):\n\n{link}\n\n"
+                              "If this wasn't you, you can ignore this email; your password won't change.\n")
+        except Exception:
+            pass  # don't reveal problems (or whether the account exists) to the visitor
+    # Same message whether or not the account exists, so the form can't be used to find accounts.
+    return render(request, "forgot.html", user=None, sent=True, email_ready=True)
+
+
+@app.get("/reset/{token}", response_class=HTMLResponse)
+def reset_page(request: Request, token: str, db: Session = Depends(get_db)):
+    valid = user_from_reset_token(token, db) is not None
+    return render(request, "reset.html", user=None, token=token, valid=valid, error=None)
+
+
+@app.post("/reset/{token}", response_class=HTMLResponse)
+def reset_password(request: Request, token: str, password: str = Form(...), db: Session = Depends(get_db)):
+    user = user_from_reset_token(token, db)
+    if user is None:
+        return render(request, "reset.html", user=None, token=token, valid=False, error=None)
+    if len(password) < 8:
+        return render(request, "reset.html", user=None, token=token, valid=True,
+                      error="Password must be at least 8 characters.")
+    user.password_hash = hash_password(password)
+    db.commit()
+    _failed_logins.pop(f"email:{user.email}", None)
     request.session["user_id"] = user.id
     return go("/invoices")
 

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Choose a new password · {{ app_name }}{% endblock %}
+{% block body %}
+<main class="narrow">
+  <p><a class="brand-link" href="/">🧾 {{ app_name }}</a></p>
+  <h1>Choose a new password</h1>
+  {% if not valid %}
+    <div class="alert error">This link has expired or has already been used.
+      <a href="/forgot">Request a new one</a>.</div>
+  {% else %}
+    {% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+    <form method="post" action="/reset/{{ token }}" class="card stack">
+      <div><label for="password">New password (at least 8 characters)</label>
+        <input id="password" name="password" type="password" minlength="8" required autofocus autocomplete="new-password"></div>
+      <button class="btn full">Save new password</button>
+    </form>
+  {% endif %}
+</main>
+{% endblock %}

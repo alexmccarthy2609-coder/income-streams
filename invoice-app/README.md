@@ -12,7 +12,7 @@ overdue invoices flagged automatically · chart of money received per month ·
 Free plan (3 invoices/month) and Pro plan (£6/month, unlimited) paid through Stripe ·
 VAT number and supply date on invoices · € and accented characters in PDFs ·
 free no-signup invoice generator and a UK invoicing guide (for Google) · CSV export ·
-self-service account deletion · limits on password guessing.
+self-service account deletion · limits on password guessing · "forgot password" emails (via Resend).
 
 ## Files
 | File | What it does |
@@ -21,6 +21,7 @@ self-service account deletion · limits on password guessing.
 | `db.py` | The database tables: users, clients, invoices, invoice items |
 | `auth.py` | Password hashing and checking who is logged in |
 | `pdf.py` | Draws the invoice PDF |
+| `emails.py` | Sends password reset emails through Resend |
 | `billing.py` | Free/Pro plans, the monthly limit, and talking to Stripe |
 | `setup_stripe.py` | One-off script that creates the Pro plan in your Stripe account |
 | `.env.example` | Template for your secret settings (copy it to `.env`) |
@@ -59,7 +60,7 @@ app, your existing `invoices.db` is upgraded automatically when the app starts.
 ```
 pytest
 ```
-You should see `34 passed`. Run this after every change to check nothing broke.
+You should see `40 passed`. Run this after every change to check nothing broke.
 
 ## Set up payments (Stripe)
 The app works without this; the Upgrade button stays greyed out until it's done.
@@ -115,6 +116,17 @@ Every time new code is pushed to GitHub, Render redeploys automatically.
 nobody uses them (the first visit then takes ~1 minute) and free databases expire after a limited time,
 so before real customers rely on it, switch the web service to **Starter** and the database to a paid
 plan in the Render dashboard.
+
+### Password reset emails (optional, but do it before real users)
+Without this, the "Forgot password?" page asks people to contact you instead.
+1. Sign up at https://resend.com (free for low volumes).
+2. **Domains → Add domain** and follow the steps to verify a domain you own. (Resend can only send
+   from a verified domain, so you'll need your own domain name, about £10/year.)
+3. **API Keys → Create API key**.
+4. In Render → invoicer → **Environment**, add:
+   - `RESEND_API_KEY` = the `re_...` key
+   - `EMAIL_FROM` = e.g. `Invoicer <hello@yourdomain.com>`
+5. Save; the app restarts. Test it with "Forgot your password?" on the login page.
 
 ### Running the tests against Postgres (optional)
 ```

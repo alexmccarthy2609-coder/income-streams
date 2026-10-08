@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Forgot password · {{ app_name }}{% endblock %}
+{% block body %}
+<main class="narrow">
+  <p><a class="brand-link" href="/">🧾 {{ app_name }}</a></p>
+  <h1>Forgot your password?</h1>
+  {% if not email_ready %}
+    <div class="alert info">
+      Password reset by email isn't switched on yet.
+      {% if contact_email %}Email <a href="mailto:{{ contact_email }}">{{ contact_email }}</a> from the address
+      you signed up with and we'll help you get back in.{% else %}Please contact us and we'll help you get back in.{% endif %}
+    </div>
+  {% elif sent %}
+    <div class="alert ok">If there's an account with that email, we've sent a link to reset your password.
+      It works for 1 hour. Check your spam folder if it doesn't arrive.</div>
+  {% else %}
+    <p class="sub">Enter your email and we'll send you a link to choose a new password.</p>
+    <form method="post" action="/forgot" class="card stack">
+      <div><label for="email">Email</label><input id="email" name="email" type="email" required autofocus></div>
+      <button class="btn full">Send reset link</button>
+    </form>
+  {% endif %}
+  <p><a href="/login">← Back to log in</a></p>
+</main>
+{% endblock %}

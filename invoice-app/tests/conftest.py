@@ -40,7 +40,8 @@ def signup(client, email="alex@example.com", password="password123"):
 @pytest.fixture(autouse=True)
 def no_real_stripe(monkeypatch):
     """Tests never use real Stripe keys, even if your .env has them."""
-    for name in ["STRIPE_SECRET_KEY", "STRIPE_PRICE_ID", "STRIPE_WEBHOOK_SECRET", "BASE_URL"]:
+    for name in ["STRIPE_SECRET_KEY", "STRIPE_PRICE_ID", "STRIPE_WEBHOOK_SECRET", "BASE_URL",
+                 "RESEND_API_KEY", "EMAIL_FROM"]:
         monkeypatch.delenv(name, raising=False)
 
 
@@ -49,3 +50,4 @@ def reset_login_limits():
     """Each test starts with no remembered wrong-password attempts."""
     import main
     main._failed_logins.clear()
+    main._reset_requests.clear()

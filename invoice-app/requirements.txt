@@ -9,6 +9,6 @@ psycopg[binary]==3.3.6
 itsdangerous==2.2.0
 stripe==16.0.0
 python-dotenv==1.2.3
+httpx==0.28.1
 # for running the tests
 pytest==9.1.1
-httpx==0.28.1
